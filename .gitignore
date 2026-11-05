@@ -1,0 +1,13 @@
+node_modules
+dist
+release
+server/.env
+server/secrets/
+.env
+.env.*
+*.log
+.DS_Store
+.wrangler
+vite.config.ts.timestamp-*
+_to_delete
+*.bak*

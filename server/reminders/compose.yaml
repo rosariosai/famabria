@@ -1,0 +1,20 @@
+# Famabria reminders -> ntfy. Put this file and famabria-reminders.mjs in the same folder on your home server, create .env next to it, then:  docker compose up -d
+# .env:  FAMABRIA_INVITE=<invite link from Famiglia>   NTFY_URL=http://192.168.0.10:7200   NTFY_TOPIC=<long random name>
+services:
+  famabria-reminders:
+    image: node:20-alpine
+    container_name: famabria-reminders
+    restart: unless-stopped
+    working_dir: /app
+    command: ["node", "famabria-reminders.mjs"]
+    environment:
+      FAMABRIA_INVITE: ${FAMABRIA_INVITE:-${FAMCAL_INVITE:-}}
+      NTFY_URL: ${NTFY_URL:?set NTFY_URL in .env}
+      NTFY_TOPIC: ${NTFY_TOPIC:?set NTFY_TOPIC in .env}
+      NTFY_TOKEN: ${NTFY_TOKEN:-}
+      POLL_SECONDS: ${POLL_SECONDS:-60}
+      STATE_FILE: /data/state.json
+      TZ: Europe/Rome
+    volumes:
+      - ./famabria-reminders.mjs:/app/famabria-reminders.mjs:ro
+      - ./data:/data

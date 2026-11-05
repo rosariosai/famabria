@@ -1,0 +1,15 @@
+name = "famcal-relay"
+main = "dist/worker.js"
+compatibility_date = "2025-01-01"
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+# The web app itself (built by relay/site.mjs) is served from the same address: https://<name>.workers.dev/app/app.html
+[assets]
+directory = "site"

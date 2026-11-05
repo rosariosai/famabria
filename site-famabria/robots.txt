@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /
+# al lancio: sostituire con "Allow: /" e aggiungere Sitemap
