@@ -16,6 +16,9 @@ import android.webkit.WebViewClient;
 
 import androidx.webkit.WebViewAssetLoader;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * Thin shell around the Famabria web app. The built web app (dist/web) is bundled in assets/app
  * and served from https://appassets.androidplatform.net/app/ so it behaves like the hosted PWA
@@ -32,10 +35,16 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .setDomain(HOST)
-                .addPathHandler("/app/", new WebViewAssetLoader.AssetsPathHandler(this) {
+                .addPathHandler("/app/", new WebViewAssetLoader.PathHandler() {
                     @Override
                     public WebResourceResponse handle(String path) {
-                        return super.handle("app/" + path);
+                        if (path.isEmpty() || path.endsWith("/")) path = path + "app.html";
+                        try {
+                            InputStream in = getAssets().open("app/" + path);
+                            return new WebResourceResponse(mimeOf(path), "utf-8", in);
+                        } catch (IOException e) {
+                            return null;
+                        }
                     }
                 })
                 .build();
@@ -77,6 +86,20 @@ public class MainActivity extends Activity {
         });
 
         if (state != null) web.restoreState(state); else web.loadUrl(START_URL);
+    }
+
+    private static String mimeOf(String p) {
+        String l = p.toLowerCase();
+        if (l.endsWith(".html")) return "text/html";
+        if (l.endsWith(".js") || l.endsWith(".mjs")) return "text/javascript";
+        if (l.endsWith(".css")) return "text/css";
+        if (l.endsWith(".json") || l.endsWith(".webmanifest")) return "application/json";
+        if (l.endsWith(".png")) return "image/png";
+        if (l.endsWith(".svg")) return "image/svg+xml";
+        if (l.endsWith(".ico")) return "image/x-icon";
+        if (l.endsWith(".woff2")) return "font/woff2";
+        if (l.endsWith(".woff")) return "font/woff";
+        return "application/octet-stream";
     }
 
     @Override
