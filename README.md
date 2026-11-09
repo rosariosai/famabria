@@ -4,7 +4,7 @@ A family calendar for notes and reminders shared between everyone's phones and c
 
 Famabria comes as a **browser extension** (Chrome, Firefox, Brave), an **installable web app** (PWA, for phones and tablets) and a tiny **relay** you can host yourself on Cloudflare's free plan. Website: <https://famabria.com>
 
-> The user interface is in Italian. Translations are welcome (see [CONTRIBUTING](CONTRIBUTING.md)).
+> The interface is available in English and Italian (Settings → Language; by default it follows your browser). More translations are welcome (see [CONTRIBUTING](CONTRIBUTING.md)).
 
 ## How it works
 
@@ -18,7 +18,7 @@ Details: [docs/SECURITY.md](docs/SECURITY.md), [docs/PRIVACY.md](docs/PRIVACY.md
 ## Install
 
 - **Chrome / Brave:** Chrome Web Store (link coming with the first release), or load `dist/chrome` as an unpacked extension.
-- **Firefox:** Firefox Add-ons (link coming with the first release), or load `dist/firefox` temporarily from `about:debugging`.
+- **Firefox:** [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/famabria-family-calendar/), or load `dist/firefox` temporarily from `about:debugging`.
 - **Phone / tablet:** open the web app, then "Add to Home Screen".
 
 ## Build from source

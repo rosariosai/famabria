@@ -2,6 +2,7 @@
 
 | Version | What changed |
 |---|---|
+| 2.10.0 | **English interface.** New Settings → Language (Automatic / Italiano / English; automatic follows the browser language, Italian browsers stay Italian). Months, weekdays, holidays, reminder options, dialogs and messages are translated. The saint-of-the-day captions are Italian-only and are hidden in English. |
 | 2.9.1 | Device name: new devices are called «PC di …» in the extension and «Telefono di …» on the web app; ✎ next to «Questo dispositivo» renames it. Reminder script: starts without FAMABRIA_INVITE once the v2 invite was redeemed. |
 | 2.9.0 | **No more double members.** The same person listed twice (same name, different ids, e.g. two devices each created «Anna») is merged automatically on every device, notes included; the smaller id wins so all devices agree. A new install now gives its first member a unique id instead of «personal», so two devices can no longer collide. |
 | 2.8.3 | Fix: the «Sposta le sue note in» chooser was squeezed into a 36 px column; it now spans the whole member row. |

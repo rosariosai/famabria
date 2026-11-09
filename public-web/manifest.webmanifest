@@ -1,6 +1,6 @@
 {
   "name": "Famabria",
-  "short_name": "Calendario",
+  "short_name": "Famabria",
   "description": "Shared family calendar",
   "start_url": "/app/",
   "scope": "/app/",

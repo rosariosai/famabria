@@ -322,3 +322,5 @@ section.entry-inline .cdialog-body, section.entry-inline .entry-inline-body { pa
 .remind-banner button { align-self: flex-end; }
 .remind-ico { flex: none; margin-left: 4px; vertical-align: -2px; color: var(--accent, #4F46E5); opacity: .9; }
 .day-entry .remind-ico, .week-note .remind-ico { margin-left: auto; }
+
+html[lang='en'][data-design='modern'] .week::before { content: 'Wk '; }

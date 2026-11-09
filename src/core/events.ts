@@ -1,5 +1,6 @@
 // Calendar entries (notes and events). Pure logic, no storage.
 import { isRemindKey, type RemindKey } from './reminders';
+import { tr } from './i18n';
 // Built "sync-ready": UUID ids, updatedAt, deletedAt tombstone, calendarId. A server can be added later without migrating data.
 
 export const ENTRY_COLORS = ['blue', 'green', 'orange', 'purple', 'pink', 'gray'] as const;
@@ -81,7 +82,7 @@ export function cleanEntry(i: EntryInput): { ok: true; value: Required<EntryInpu
   const notes = (i.notes ?? '').replace(/\r\n/g, '\n').trim();
   const time = i.time ? i.time.trim() : null;
   if (!DATE_RE.test(i.date)) return { ok: false, error: 'The date is not valid.' };
-  if (!title && !notes) return { ok: false, error: 'Scrivi un titolo o una nota' };
+  if (!title && !notes) return { ok: false, error: tr('Scrivi un titolo o una nota', 'Write a title or a note') };
   if (time !== null && !TIME_RE.test(time)) return { ok: false, error: 'Use a time like 18:30.' };
   return {
     ok: true,
@@ -202,7 +203,7 @@ function parseCalendars(raw: unknown, hasOtherSettings: boolean): CalendarDef[] 
     const name = typeof c.name === 'string' ? c.name.replace(/\s+/g, ' ').trim().slice(0, MEMBER_NAME_MAX) : '';
     const old = name === 'Wife' || name === 'Family'; // names saved before 0.3.2 follow the new defaults
     const color = (ENTRY_COLORS as readonly string[]).includes(c.color as string) ? (c.color as EntryColor) : legacy?.color ?? 'gray';
-    out.push({ id: c.id, name: !name || old ? legacy?.name ?? 'Membro' : name, color });
+    out.push({ id: c.id, name: !name || old ? legacy?.name ?? tr('Membro', 'Member') : name, color });
     if (out.length >= MEMBER_LIMIT) break;
   }
   return out.length ? out : DEFAULT_CALENDARS.map((c) => ({ ...c }));
@@ -213,7 +214,7 @@ export function ensureMembers(cals: CalendarDef[], events: { calendarId: string;
   // deleted notes (tombstones) do not bring a member back: otherwise a removed «Membro» would reappear forever
   const missing = [...new Set(events.filter((e) => !e.deletedAt).map((e) => e.calendarId))].filter((id) => !cals.some((c) => c.id === id));
   if (!missing.length) return cals;
-  return [...cals, ...missing.map((id) => LEGACY_CALENDARS.find((d) => d.id === id) ?? { id, name: 'Membro', color: 'gray' as EntryColor })];
+  return [...cals, ...missing.map((id) => LEGACY_CALENDARS.find((d) => d.id === id) ?? { id, name: tr('Membro', 'Member'), color: 'gray' as EntryColor })];
 }
 
 /** Members as received from another device: only well-formed ones, at most MEMBER_LIMIT. */
@@ -230,7 +231,7 @@ export function sanitizeMembers(raw: unknown): CalendarDef[] {
   return out;
 }
 
-const PLACEHOLDER_NAMES = ['Membro', 'name1'];
+const PLACEHOLDER_NAMES = ['Membro', 'Member', 'name1'];
 
 /** Same person listed twice under different ids (e.g. two devices each created «Anna»). Same name (ignoring case/spaces) = same person.
  *  The smaller id always wins ('personal' last), so every device reaches the same answer on its own. Placeholder names are never merged. */

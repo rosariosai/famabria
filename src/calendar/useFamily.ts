@@ -4,6 +4,7 @@ import { EMPTY_FAMILY_STATE, joinFamily, mailboxOf, newFamily, newFamilyWith, sy
 import { MailboxError } from '../cloud/mailbox';
 import { createFamilyV2, isInviteV2, redeemInviteV2, renewTokenIfNeeded } from '../cloud/v2';
 import type { CalendarDef } from '../core/events';
+import { tm, tr } from '../core/i18n';
 
 export type FamilyStatus = 'off' | 'idle' | 'syncing' | 'ok' | 'unreachable' | 'auth' | 'server';
 const EVERY_MS = 5 * 60_000, MIN_GAP_MS = 15_000;
@@ -35,12 +36,12 @@ export function useFamily(ready: boolean, getDb: () => Db | null, onPulled: () =
       if (r.changed.length) await putEvents(db, r.changed);
       stRef.current = r.state; setState(r.state); await saveFamilyState(db, r.state);
       setDevices(r.devices); setDeviceInfo(r.deviceInfo); setStatus('ok');
-      setMessage(r.changed.length ? `Ricevute ${r.changed.length} modifiche.` : 'Tutto aggiornato.');
+      setMessage(r.changed.length ? tr(`Ricevute ${r.changed.length} modifiche.`, `Received ${r.changed.length} changes.`) : tr('Tutto aggiornato.', 'Everything is up to date.'));
       if (r.changed.length) onPulled();
       return true;
     } catch (e) {
       const k = e instanceof MailboxError ? e.kind : 'server';
-      setStatus(k); setMessage(e instanceof MailboxError ? e.message : 'Qualcosa è andato storto durante la sincronizzazione.');
+      setStatus(k); setMessage(e instanceof MailboxError ? tm(e.message) : tm('Qualcosa è andato storto durante la sincronizzazione.'));
       return false;
     } finally { busy.current = false; }
   }, [getDb, onPulled, getMembers, onMembers]);

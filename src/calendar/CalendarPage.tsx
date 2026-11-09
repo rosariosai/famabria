@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  MONTHS_IT, WEEKDAYS_IT, WEEKDAYS_IT_SHORT, addKeyDays, formatYearMonth, isoWeek, weekMonday, monthCells, parseYearMonth, shiftMonth, swipeMonthDelta, weekdayOf, type DayCell, type MoonPhase, type YearMonth,
+  MONTHS, WEEKDAYS, WEEKDAYS_SHORT, addKeyDays, formatYearMonth, isoWeek, weekMonday, monthCells, parseYearMonth, shiftMonth, swipeMonthDelta, weekdayOf, type DayCell, type MoonPhase, type YearMonth,
 } from '../core/calendar';
 import { RemindIcon } from './RemindIcon';
+import { LANG, tr } from '../core/i18n';
 import { adoptMembers, planMemberMerges, byDate, calendarOf, cleanEntry, createEvent, highlightParts, restore, searchEntries, softDelete, updateEvent, type CalEvent, type CalendarDef, type CalSettings } from '../core/events';
 import { newId } from '../core/id';
 import { CalSettingsDialog } from './CalSettingsDialog';
@@ -19,7 +20,7 @@ import { putEvents } from '../data/db';
 import { eventsToRestore } from '../core/backup';
 import { finishDropboxLogin } from '../cloud/dropbox';
 
-const MOON: Record<MoonPhase, string> = { new: 'Luna nuova', first: 'Primo quarto', full: 'Luna piena', last: 'Ultimo quarto' };
+const MOON: Record<MoonPhase, string> = { new: tr('Luna nuova', 'New moon'), first: tr('Primo quarto', 'First quarter'), full: tr('Luna piena', 'Full moon'), last: tr('Ultimo quarto', 'Last quarter') };
 
 /** Northern-hemisphere look: first quarter is lit on the right, last quarter on the left. */
 function MoonIcon({ phase }: { phase: MoonPhase }) {
@@ -35,7 +36,7 @@ function MoonIcon({ phase }: { phase: MoonPhase }) {
 const nowYm = (): YearMonth => { const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }; };
 const fromHash = (): YearMonth => parseYearMonth(location.hash.replace(/^#/, '')) ?? nowYm();
 const keyToParts = (k: string) => ({ y: Number(k.slice(0, 4)), m: Number(k.slice(5, 7)) - 1, d: Number(k.slice(8, 10)) });
-const longDate = (k: string) => { const { y, m, d } = keyToParts(k); return `${WEEKDAYS_IT[weekdayOf(y, m, d)]} ${d} ${MONTHS_IT[m].toLowerCase()} ${y}`; };
+const longDate = (k: string) => { const { y, m, d } = keyToParts(k); return `${WEEKDAYS[weekdayOf(y, m, d)]} ${d} ${tr(MONTHS[m].toLowerCase(), MONTHS[m])} ${y}`; };
 
 function Marked({ text, query }: { text: string; query: string }) {
   return <>{highlightParts(text, query).map((p, i) => (p.hit ? <mark key={i}>{p.text}</mark> : <span key={i}>{p.text}</span>))}</>;
@@ -56,13 +57,13 @@ function useYearMonth() {
 function Strip(props: { ym: YearMonth; side: 'prev' | 'next'; onGo(): void; local: ReturnType<typeof localOf> }) {
   const cells = useMemo(() => monthCells(props.ym.year, props.ym.month, { local: props.local }), [props.ym, props.local]);
   return (
-    <aside className={`strip strip--${props.side}`} aria-label={props.side === 'prev' ? 'Mese precedente' : 'Mese successivo'}>
-      <button className="strip-head" onClick={props.onGo} lang="it">
-        <span className="full">{MONTHS_IT[props.ym.month].toUpperCase()}</span><span className="abbr" aria-hidden="true">{MONTHS_IT[props.ym.month].slice(0, 3).toUpperCase()}</span><b>{props.ym.year}</b>
+    <aside className={`strip strip--${props.side}`} aria-label={props.side === 'prev' ? tr('Mese precedente', 'Previous month') : tr('Mese successivo', 'Next month')}>
+      <button className="strip-head" onClick={props.onGo} lang={LANG}>
+        <span className="full">{MONTHS[props.ym.month].toUpperCase()}</span><span className="abbr" aria-hidden="true">{MONTHS[props.ym.month].slice(0, 3).toUpperCase()}</span><b>{props.ym.year}</b>
       </button>
       <ol className="strip-days">
         {cells.map((c) => (
-          <li key={c.key} className={`${c.red ? 'red' : ''}${c.weekday === 0 ? ' wk-end' : ''}`}><span>{c.day}</span><span className="wd">{WEEKDAYS_IT_SHORT[c.weekday]}</span><span className="ini" aria-hidden="true">{WEEKDAYS_IT_SHORT[c.weekday][0]}</span></li>
+          <li key={c.key} className={`${c.red ? 'red' : ''}${c.weekday === 0 ? ' wk-end' : ''}`}><span>{c.day}</span><span className="wd">{WEEKDAYS_SHORT[c.weekday]}</span><span className="ini" aria-hidden="true">{WEEKDAYS_SHORT[c.weekday][0]}</span></li>
         ))}
       </ol>
     </aside>
@@ -75,10 +76,10 @@ function DayRow(props: { calendars: CalendarDef[]; c: DayCell; today: boolean; e
   const { c, entries } = props;
   return (
     <li className={`day${c.red ? ' red' : ''}${props.today ? ' today' : ''}${c.weekday === 0 ? ' wk-end' : ''}`}>
-      <button className="day-btn" onClick={() => props.onOpen(c.key)} aria-current={props.today ? 'date' : undefined} title="Aggiungi o modifica note">
+      <button className="day-btn" onClick={() => props.onOpen(c.key)} aria-current={props.today ? 'date' : undefined} title={tr('Aggiungi o modifica note', 'Add or edit notes')}>
         <span className="day-num">{c.day}</span>
         <span className="day-main">
-          <span className="day-name">{WEEKDAYS_IT[c.weekday]}<span className="sr-only"> {MONTHS_IT[props.ym.month].toLowerCase()} {props.ym.year}</span></span>
+          <span className="day-name">{WEEKDAYS[c.weekday]}<span className="sr-only"> {tr(MONTHS[props.ym.month].toLowerCase(), MONTHS[props.ym.month])} {props.ym.year}</span></span>
           {c.caption && <span className="day-caption">{c.caption}</span>}
           {entries.length > 0 && (
             <span className="day-entries">
@@ -86,12 +87,12 @@ function DayRow(props: { calendars: CalendarDef[]; c: DayCell; today: boolean; e
                 <span key={e.id} className="day-entry"><i className={`dot dot--${calendarOf(props.calendars, e.calendarId).color}`} aria-hidden />{e.time && <b>{e.time}</b>}<span className="truncate">{e.title}</span><RemindIcon e={e} /></span>
               ))}
               {entries.length > 2 && <span className="day-more">+{entries.length - 2}</span>}
-              <span className="sr-only">, {entries.length} {entries.length === 1 ? 'nota' : 'note'}</span>
+              <span className="sr-only">, {entries.length} {entries.length === 1 ? tr('nota', 'note') : tr('note', 'notes')}</span>
             </span>
           )}
         </span>
         <span className="day-side">
-          {props.showWeeks && c.week && <span className="week" title={`Settimana ${c.week}`}><span className="sr-only">Settimana </span>{c.week}</span>}
+          {props.showWeeks && c.week && <span className="week" title={`${tr('Settimana', 'Week')} ${c.week}`}><span className="sr-only">{tr('Settimana', 'Week')} </span>{c.week}</span>}
           {props.showMoon && c.moon && <span className="moon" title={MOON[c.moon]}><MoonIcon phase={c.moon} /><span className="sr-only">{MOON[c.moon]}</span></span>}
         </span>
       </button>
@@ -173,8 +174,8 @@ export function CalendarPage() {
   const weekLabel = (() => {
     if (weekCells.length < 7) return '';
     const a = keyToParts(weekCells[0].key), b = keyToParts(weekCells[6].key);
-    const from = a.m === b.m ? `${a.d}` : `${a.d} ${MONTHS_IT[a.m].toLowerCase()}`;
-    return `${from} – ${b.d} ${MONTHS_IT[b.m].toLowerCase()} ${b.y}`;
+    const from = a.m === b.m ? `${a.d}` : `${a.d} ${tr(MONTHS[a.m].toLowerCase(), MONTHS[a.m])}`;
+    return `${from} – ${b.d} ${tr(MONTHS[b.m].toLowerCase(), MONTHS[b.m])} ${b.y}`;
   })();
   const [desktop, setDesktop] = useState(() => window.matchMedia('(min-width: 1000px)').matches);
   useEffect(() => { const mq = window.matchMedia('(min-width: 1000px)'); const f = () => setDesktop(mq.matches); mq.addEventListener('change', f); return () => mq.removeEventListener('change', f); }, []);
@@ -228,7 +229,7 @@ export function CalendarPage() {
     if (settings.theme === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', settings.theme);
     try { localStorage.setItem('famcal-theme', settings.theme); } catch { /* private window: no memory, still works */ }
   }, [settings.theme]);
-  useEffect(() => { document.title = `${MONTHS_IT[ym.month]} ${ym.year} — Famabria`; }, [ym]);
+  useEffect(() => { document.title = `${MONTHS[ym.month]} ${ym.year} — Famabria`; }, [ym]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -292,11 +293,11 @@ export function CalendarPage() {
     setSaveError('');
     if (settings.hiddenCalendars.includes(c.value.calendarId)) void saveSettings({ ...settings, hiddenCalendars: settings.hiddenCalendars.filter((x) => x !== c.value.calendarId) }); // a note for a hidden member must not vanish
     save(existing ? updateEvent(existing, c.value, Date.now()) : createEvent(c.value, newId(), Date.now()))
-      .catch((e: unknown) => setSaveError(`Non riesco a salvare la nota: ${(e as Error)?.message ?? 'errore sconosciuto'}. Prova a ricaricare la pagina.`));
+      .catch((e: unknown) => setSaveError(tr(`Non riesco a salvare la nota: ${(e as Error)?.message ?? 'errore sconosciuto'}. Prova a ricaricare la pagina.`, `Could not save the note: ${(e as Error)?.message ?? 'unknown error'}. Try reloading the page.`)));
   };
   const onDelete = (e: CalEvent) => {
     void save(softDelete(e, Date.now()));
-    showToast('Nota eliminata', () => { void save(restore(e, Date.now())); setToast(null); });
+    showToast(tr('Nota eliminata', 'Note deleted'), () => { void save(restore(e, Date.now())); setToast(null); });
   };
 
   const results = useMemo(() => searchEntries(visibleEvents, query), [visibleEvents, query]);
@@ -312,66 +313,66 @@ export function CalendarPage() {
   const clearSearch = () => { setQuery(''); setMemberFilter(null); };
   const jumpTo = (e: CalEvent) => { const { y, m } = keyToParts(e.date); go({ year: y, month: m }); open(e.date); };
 
-  if (state === 'error') return <p className="cal-error">Non riesco ad aprire l'archivio locale. Le finestre private o ospite possono bloccarlo.</p>;
+  if (state === 'error') return <p className="cal-error">{tr("Non riesco ad aprire l'archivio locale. Le finestre private o ospite possono bloccarlo.", 'Cannot open local storage. Private or guest windows can block it.')}</p>;
 
   return (
     <div className="cal">
-      <a className="skip-link" href="#cal-days">Salta ai giorni</a>
-      <nav className="cal-toolbar" aria-label="Navigazione calendario">
+      <a className="skip-link" href="#cal-days">{tr('Salta ai giorni', 'Skip to days')}</a>
+      <nav className="cal-toolbar" aria-label={tr('Navigazione calendario', 'Calendar navigation')}>
         <span className="sp" />
-        <label className="sr-only" htmlFor="cal-search">Cerca nelle note</label>
-        <input id="cal-search" className="cbtn cal-search" type="search" placeholder="Cerca nelle note…  ( / )" value={query} autoComplete="off"
+        <label className="sr-only" htmlFor="cal-search">{tr('Cerca nelle note', 'Search notes')}</label>
+        <input id="cal-search" className="cbtn cal-search" type="search" placeholder={tr('Cerca nelle note…  ( / )', 'Search notes…  ( / )')} value={query} autoComplete="off"
           onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Escape') { setQuery(''); e.currentTarget.blur(); } }} />
-        <div className="view-toggle" role="group" aria-label="Vista">
-          <button className="cbtn" aria-pressed={view === 'month'} onClick={() => setView('month')}>Mese</button>
-          <button className="cbtn" aria-pressed={view === 'week'} onClick={() => setView('week')}>Settimana</button>
+        <div className="view-toggle" role="group" aria-label={tr('Vista', 'View')}>
+          <button className="cbtn" aria-pressed={view === 'month'} onClick={() => setView('month')}>{tr('Mese', 'Month')}</button>
+          <button className="cbtn" aria-pressed={view === 'week'} onClick={() => setView('week')}>{tr('Settimana', 'Week')}</button>
         </div>
-        <button className="cbtn" onClick={() => step(-1)} aria-label={view === 'week' ? 'Settimana precedente' : 'Mese precedente'} title="Precedente (←)">‹</button>
-        <button className="cbtn" onClick={goToday} disabled={view === 'week' ? weekMonday(weekDay) === weekMonday(todayKey) : isNow} title="Vai a oggi (T)">Oggi</button>
-        <button className="cbtn" onClick={() => step(1)} aria-label={view === 'week' ? 'Settimana successiva' : 'Mese successivo'} title="Successivo (→)">›</button>
-        <label className="sr-only" htmlFor="cal-month">Mese</label>
+        <button className="cbtn" onClick={() => step(-1)} aria-label={view === 'week' ? tr('Settimana precedente', 'Previous week') : tr('Mese precedente', 'Previous month')} title={tr('Precedente (←)', 'Previous (←)')}>‹</button>
+        <button className="cbtn" onClick={goToday} disabled={view === 'week' ? weekMonday(weekDay) === weekMonday(todayKey) : isNow} title={tr('Vai a oggi (T)', 'Go to today (T)')}>{tr('Oggi', 'Today')}</button>
+        <button className="cbtn" onClick={() => step(1)} aria-label={view === 'week' ? tr('Settimana successiva', 'Next week') : tr('Mese successivo', 'Next month')} title={tr('Successivo (→)', 'Next (→)')}>›</button>
+        <label className="sr-only" htmlFor="cal-month">{tr('Mese', 'Month')}</label>
         <select id="cal-month" className="cbtn" hidden={view === 'week'} value={ym.month} onChange={(e) => go({ year: ym.year, month: Number(e.target.value) })}>
-          {MONTHS_IT.map((m, i) => <option key={m} value={i}>{m}</option>)}
+          {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
         </select>
-        <label className="sr-only" htmlFor="cal-year">Anno</label>
+        <label className="sr-only" htmlFor="cal-year">{tr('Anno', 'Year')}</label>
         <input id="cal-year" className="cbtn cal-year" hidden={view === 'week'} inputMode="numeric" value={yearText} maxLength={4}
           onChange={(e) => setYearText(e.target.value.replace(/\D/g, ''))} onBlur={commitYear}
           onKeyDown={(e) => { if (e.key === 'Enter') commitYear(); if (e.key === 'ArrowUp') { e.preventDefault(); go({ year: ym.year + 1, month: ym.month }); } if (e.key === 'ArrowDown') { e.preventDefault(); go({ year: ym.year - 1, month: ym.month }); } }} />
-        {!solo && <button className={`cbtn sync-btn sync-btn--${fam.status === 'unreachable' || fam.status === 'auth' || fam.status === 'server' ? 'offline' : fam.status}`} onClick={() => { opener.current = document.activeElement as HTMLElement; setShowFamily(true); }} aria-haspopup="dialog" title="Condividi le note con la famiglia">
-          👪 {fam.family ? familyWord(fam.status) : 'Famiglia'}
+        {!solo && <button className={`cbtn sync-btn sync-btn--${fam.status === 'unreachable' || fam.status === 'auth' || fam.status === 'server' ? 'offline' : fam.status}`} onClick={() => { opener.current = document.activeElement as HTMLElement; setShowFamily(true); }} aria-haspopup="dialog" title={tr('Condividi le note con la famiglia', 'Share notes with your family')}>
+          👪 {fam.family ? familyWord(fam.status) : tr('Famiglia', 'Family')}
         </button>}
         {sync.config && <button className={`cbtn sync-btn sync-btn--${sync.status}`} onClick={() => { opener.current = document.activeElement as HTMLElement; setShowSync(true); }} aria-haspopup="dialog"
-          title={sync.config ? `Server di casa: ${statusWord(sync.status)}` : 'Condividi le note con il server di casa'}>
+          title={sync.config ? `${tr('Server di casa', 'Home server')}: ${statusWord(sync.status)}` : tr('Condividi le note con il server di casa', 'Share notes with the home server')}>
           ⟳ {sync.config ? statusWord(sync.status).split(' (')[0] : 'Sync'}
         </button>}
-        <button className="cbtn" onClick={() => { opener.current = document.activeElement as HTMLElement; setShowSettings(true); }} aria-haspopup="dialog" aria-label="Impostazioni" title="Impostazioni">⚙</button>
+        <button className="cbtn" onClick={() => { opener.current = document.activeElement as HTMLElement; setShowSettings(true); }} aria-haspopup="dialog" aria-label={tr('Impostazioni', 'Settings')} title={tr('Impostazioni', 'Settings')}>⚙</button>
       </nav>
 
-      {!(solo && settings.calendars.length < 2) && <section className="cal-legend" aria-label="Membri mostrati">
+      {!(solo && settings.calendars.length < 2) && <section className="cal-legend" aria-label={tr('Membri mostrati', 'Members shown')}>
         {settings.calendars.map((c) => {
           const on = !settings.hiddenCalendars.includes(c.id);
           return (
             <button key={c.id} className="cbtn cbtn--sm legend-btn" aria-pressed={on}
               onClick={() => void saveSettings({ ...settings, hiddenCalendars: on ? [...settings.hiddenCalendars, c.id] : settings.hiddenCalendars.filter((x) => x !== c.id) })}>
-              <i className={`dot dot--${c.color}`} aria-hidden />{c.name}{!on && <span className="sr-only"> (nascosto)</span>}
+              <i className={`dot dot--${c.color}`} aria-hidden />{c.name}{!on && <span className="sr-only"> {tr('(nascosto)', '(hidden)')}</span>}
             </button>
           );
         })}
       </section>}
 
       {searching ? (
-        <main className="cal-results" id="cal-days" tabIndex={-1} aria-label="Risultati della ricerca" lang="it">
-          <h1 className="sr-only">Risultati della ricerca</h1>
+        <main className="cal-results" id="cal-days" tabIndex={-1} aria-label={tr('Risultati della ricerca', 'Search results')} lang={LANG}>
+          <h1 className="sr-only">{tr('Risultati della ricerca', 'Search results')}</h1>
           <div className="res-head">
             <div>
               <strong className="res-query">“{query.trim()}”</strong>
-              <p className="muted" role="status">{shown.length === 0 ? 'Nessuna nota trovata' : `${shown.length} ${shown.length === 1 ? 'risultato' : 'risultati'} in ${months.length} ${months.length === 1 ? 'mese' : 'mesi'}`}</p>
+              <p className="muted" role="status">{shown.length === 0 ? tr('Nessuna nota trovata', 'No notes found') : tr(`${shown.length} ${shown.length === 1 ? 'risultato' : 'risultati'} in ${months.length} ${months.length === 1 ? 'mese' : 'mesi'}`, `${shown.length} ${shown.length === 1 ? 'result' : 'results'} in ${months.length} ${months.length === 1 ? 'month' : 'months'}`)}</p>
             </div>
-            <button className="cbtn cbtn--sm" onClick={clearSearch}>Azzera ✕</button>
+            <button className="cbtn cbtn--sm" onClick={clearSearch}>{tr('Azzera', 'Clear')} ✕</button>
           </div>
           {results.length > 0 && (
-            <div className="res-chips" role="group" aria-label="Filtra per membro">
-              <button className="res-chip" aria-pressed={memberFilter === null} onClick={() => setMemberFilter(null)}>Tutti <span>{results.length}</span></button>
+            <div className="res-chips" role="group" aria-label={tr('Filtra per membro', 'Filter by member')}>
+              <button className="res-chip" aria-pressed={memberFilter === null} onClick={() => setMemberFilter(null)}>{tr('Tutti', 'All')} <span>{results.length}</span></button>
               {settings.calendars.filter((c) => counts[c.id]).map((c) => (
                 <button key={c.id} className="res-chip" aria-pressed={memberFilter === c.id} onClick={() => setMemberFilter(memberFilter === c.id ? null : c.id)}>
                   <i className={`avatar avatar--xs dot--${c.color}`} aria-hidden>{c.name.slice(0, 1).toUpperCase()}</i>{c.name} <span>{counts[c.id]}</span>
@@ -379,12 +380,12 @@ export function CalendarPage() {
               ))}
             </div>
           )}
-          {months.length === 0 && <p className="res-empty">Nessuna nota trovata. Prova con un'altra parola.</p>}
+          {months.length === 0 && <p className="res-empty">{tr("Nessuna nota trovata. Prova con un'altra parola.", 'No notes found. Try another word.')}</p>}
           {months.map((m) => {
             const y = Number(m.key.slice(0, 4)); const mo = Number(m.key.slice(5, 7)) - 1;
             return (
-              <section key={m.key} className="res-month" aria-label={`${MONTHS_IT[mo]} ${y}`}>
-                <h2><span>{MONTHS_IT[mo].toUpperCase()}</span> <b>{y}</b><em>{m.items.length} {m.items.length === 1 ? 'nota' : 'note'}</em></h2>
+              <section key={m.key} className="res-month" aria-label={`${MONTHS[mo]} ${y}`}>
+                <h2><span>{MONTHS[mo].toUpperCase()}</span> <b>{y}</b><em>{m.items.length} {m.items.length === 1 ? tr('nota', 'note') : tr('note', 'notes')}</em></h2>
                 <ul>
                   {m.items.map((e) => {
                     const { y: yy, m: mm, d } = keyToParts(e.date); const wd = weekdayOf(yy, mm, d); const cal = calendarOf(settings.calendars, e.calendarId);
@@ -392,7 +393,7 @@ export function CalendarPage() {
                     return (
                       <li key={e.id}>
                         <button className="res-card" onClick={() => jumpTo(e)}>
-                          <span className={`res-date${wd === 0 ? ' red' : ''}`}><b>{d}</b><small>{WEEKDAYS_IT_SHORT[wd]}</small></span>
+                          <span className={`res-date${wd === 0 ? ' red' : ''}`}><b>{d}</b><small>{WEEKDAYS_SHORT[wd]}</small></span>
                           <span className="res-body">
                             <span className="res-title"><Marked text={e.title} query={query} /><RemindIcon e={e} /></span>
                             <span className="res-meta">{e.time && <b>{e.time}</b>}{first && <span className="truncate"><Marked text={first} query={query} /></span>}</span>
@@ -408,16 +409,16 @@ export function CalendarPage() {
           })}
         </main>
       ) : view === 'week' ? (
-        <div className="cal-sheet cal-sheet--week" lang="it">
-          <main className="cal-main" id="cal-days" tabIndex={-1} aria-label={`Settimana ${weekLabel}`}>
-            <h1 className="cal-title week-title"><span>{weekLabel}</span> <b>Sett. {weekCells[0] ? isoWeek(keyToParts(weekCells[0].key).y, keyToParts(weekCells[0].key).m, keyToParts(weekCells[0].key).d) : ''}</b></h1>
+        <div className="cal-sheet cal-sheet--week" lang={LANG}>
+          <main className="cal-main" id="cal-days" tabIndex={-1} aria-label={`${tr('Settimana', 'Week')} ${weekLabel}`}>
+            <h1 className="cal-title week-title"><span>{weekLabel}</span> <b>{tr('Sett.', 'Wk')} {weekCells[0] ? isoWeek(keyToParts(weekCells[0].key).y, keyToParts(weekCells[0].key).m, keyToParts(weekCells[0].key).d) : ''}</b></h1>
             <ol className="week-grid">
               {weekCells.map((c) => {
                 const es = entriesByDate[c.key] ?? [];
                 return (
                   <li key={c.key} className={`week-day${c.red ? ' red' : ''}${c.key === todayKey ? ' today' : ''}${c.key === selDate ? ' selected' : ''}`}>
                     <button className="week-btn" onClick={() => open(c.key)} aria-current={c.key === todayKey ? 'date' : undefined}>
-                      <span className="week-head"><span className="week-wd">{WEEKDAYS_IT[c.weekday]}</span><span className="week-num">{c.day}</span></span>
+                      <span className="week-head"><span className="week-wd">{WEEKDAYS[c.weekday]}</span><span className="week-num">{c.day}</span></span>
                       {c.caption && <span className="week-cap">{c.caption}</span>}
                       {es.map((e) => (
                         <span key={e.id} className="week-note"><i className={`dot dot--${calendarOf(settings.calendars, e.calendarId).color}`} aria-hidden />{e.time && <b>{e.time}</b>}<span>{e.title}</span><RemindIcon e={e} /></span>
@@ -431,10 +432,10 @@ export function CalendarPage() {
           </main>
         </div>
       ) : (
-        <div className={`cal-sheet${settings.sides === false ? ' cal-sheet--sides-off' : ' cal-sheet--sides-on'}`} lang="it">
+        <div className={`cal-sheet${settings.sides === false ? ' cal-sheet--sides-off' : ' cal-sheet--sides-on'}`} lang={LANG}>
           <Strip ym={shiftMonth(ym, -1)} side="prev" local={local} onGo={() => go(shiftMonth(ym, -1))} />
-          <main className="cal-main" id="cal-days" tabIndex={-1} aria-label={`${MONTHS_IT[ym.month]} ${ym.year}`}>
-            <h1 className="cal-title"><span>{MONTHS_IT[ym.month].toUpperCase()}</span> <b>{ym.year}</b></h1>
+          <main className="cal-main" id="cal-days" tabIndex={-1} aria-label={`${MONTHS[ym.month]} ${ym.year}`}>
+            <h1 className="cal-title"><span>{MONTHS[ym.month].toUpperCase()}</span> <b>{ym.year}</b></h1>
             <div className="cal-cols" style={{ ['--rows' as string]: half }}>
               {[cells.slice(0, half), cells.slice(half)].map((col, i) => (
                 <ol className="cal-col" key={i}>
@@ -449,13 +450,13 @@ export function CalendarPage() {
         </div>
       )}
 
-      <aside className="cal-day" aria-label="Giorno selezionato">
-        <p className="cal-day-kicker">Giorno selezionato{selDate === todayKey ? ' · oggi' : ''}</p>
+      <aside className="cal-day" aria-label={tr('Giorno selezionato', 'Selected day')}>
+        <p className="cal-day-kicker">{tr('Giorno selezionato', 'Selected day')}{selDate === todayKey ? tr(' · oggi', ' · today') : ''}</p>
         {desktop && (
           <EntryDialog key={selDate} inline calendars={settings.calendars} defaultCalendar={settings.defaultCalendar} dateLabel={longDate(selDate)} entries={entriesByDate[selDate] ?? []} onSave={onSave} onDelete={onDelete} onClose={() => undefined} undo={toast} saveError={saveError} />
         )}
       </aside>
-      <footer className="cal-hint">← → mese · Maiusc+← → anno · T oggi · / cerca · clicca un giorno per aggiungere una nota</footer>
+      <footer className="cal-hint">{tr('← → mese · Maiusc+← → anno · T oggi · / cerca · clicca un giorno per aggiungere una nota', '← → month · Shift+← → year · T today · / search · click a day to add a note')}</footer>
 
       {openDate && (
         <EntryDialog calendars={settings.calendars} defaultCalendar={settings.defaultCalendar} dateLabel={longDate(openDate)} entries={entriesByDate[openDate] ?? []} onSave={onSave} onDelete={onDelete} onClose={closeDialog} undo={toast} saveError={saveError} />
@@ -463,16 +464,16 @@ export function CalendarPage() {
       {showWelcome && (
         <WelcomeDialog
           onDone={(name, color, mode) => { const myId = 'm' + Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => b.toString(36).padStart(2, '0')).join(''); /* a unique id, so two devices never both call their first member «personal» */ void saveSettings({ ...settings, welcomed: true, mode, calendars: settings.calendars.map((c) => (c.id === 'personal' ? { ...c, id: myId, name, color } : c)), defaultCalendar: settings.defaultCalendar === 'personal' ? myId : settings.defaultCalendar }); if (mode === 'shared') { opener.current = null; setShowFamily(true); } }}
-          onSync={() => { opener.current = null; setShowFamily(true); }} syncLabel="Con la famiglia (o ho un invito)" />
+          onSync={() => { opener.current = null; setShowFamily(true); }} syncLabel={tr('Con la famiglia (o ho un invito)', 'With my family (or I have an invite)')} />
       )}
-      {showFamily && <FamilyDialog fam={fam} defaultName={`${__TARGET__ === 'web' ? 'Telefono' : 'PC'} di ${calendarOf(settings.calendars, settings.defaultCalendar).name}`} initialInvite={inviteText} onClose={closeDialog} />}
+      {showFamily && <FamilyDialog fam={fam} defaultName={tr(`${__TARGET__ === 'web' ? 'Telefono' : 'PC'} di ${calendarOf(settings.calendars, settings.defaultCalendar).name}`, `${calendarOf(settings.calendars, settings.defaultCalendar).name}'s ${__TARGET__ === 'web' ? 'phone' : 'PC'}`)} initialInvite={inviteText} onClose={closeDialog} />}
       {showSync && <SyncDialog sync={sync} onClose={closeDialog} />}
       {showSettings && <CalSettingsDialog onMerge={async (a, b) => { const n = await mergeMember(a, b); changed(); return n; }} solo={solo} onShare={() => { setShowSettings(false); void saveSettings({ ...settings, mode: 'shared' }); opener.current = null; setShowFamily(true); }} hasFamily={!!fam.family || !!sync.config} events={events} onRestore={restoreBackup} onOpenSync={() => { setShowSettings(false); setShowSync(true); }} settings={settings} usedCalendarIds={[...new Set(events.filter((e) => e.deletedAt === null).map((e) => e.calendarId))]} onSave={(s) => void saveSettings(s)} onClose={closeDialog} />}
 
       {toast && !openDate && !desktop && (
         <div className="ctoast" role="status" aria-live="polite">
           <span>{toast.message}</span>
-          <button className="ctoast-btn" onClick={toast.run}>Annulla</button>
+          <button className="ctoast-btn" onClick={toast.run}>{tr('Annulla', 'Undo')}</button>
         </div>
       )}
     </div>

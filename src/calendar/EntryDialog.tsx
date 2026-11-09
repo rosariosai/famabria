@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { calendarOf, cleanEntry, type CalEvent, type CalendarDef, type EntryColor } from '../core/events';
 import { RemindIcon } from './RemindIcon';
 import { remindOptions, type RemindKey } from '../core/reminders';
+import { LOCALE, tr } from '../core/i18n';
 
 export interface EntryValue { title: string; notes: string; time: string | null; color: EntryColor; calendarId: string; remind: RemindKey }
 
@@ -54,18 +55,18 @@ export function EntryDialog(props: {
       <div className={props.inline ? 'entry-inline-body' : 'cdialog-body'}>
         <h2 id="entry-title">{props.dateLabel}</h2>
 
-        {props.entries.length === 0 ? <p className="muted">Ancora nessuna nota per questo giorno.</p> : (
-          <ul className="entries" aria-label="Note del giorno">
+        {props.entries.length === 0 ? <p className="muted">{tr('Ancora nessuna nota per questo giorno.', 'No notes for this day yet.')}</p> : (
+          <ul className="entries" aria-label={tr('Note del giorno', 'Notes for the day')}>
             {props.entries.map((e) => (
               <li key={e.id} className={`entry${editing?.id === e.id ? ' entry--editing' : ''}`}>
                 <span className={`dot dot--${calendarOf(props.calendars, e.calendarId).color}`} aria-hidden />
                 <div className="entry-text">
                   <strong>{e.time && <span className="entry-time">{e.time} </span>}{e.title}<RemindIcon e={e} /></strong>
                   {e.notes && e.notes !== e.title && <p>{e.notes}</p>}
-                  <p className="entry-meta">{calendarOf(props.calendars, e.calendarId).name} · {e.by ? `modificata da ${e.by}` : 'modificata'} il {new Date(e.updatedAt).toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                  <p className="entry-meta">{calendarOf(props.calendars, e.calendarId).name} · {e.by ? tr(`modificata da ${e.by}`, `edited by ${e.by}`) : tr('modificata', 'edited')} {tr('il', 'on')} {new Date(e.updatedAt).toLocaleString(LOCALE, { dateStyle: 'medium', timeStyle: 'short' })}</p>
                 </div>
-                <button className="cbtn cbtn--sm" onClick={() => edit(e)} aria-label={`Modifica ${e.title}`}>Modifica</button>
-                <button className="cbtn cbtn--sm cbtn--danger" onClick={() => props.onDelete(e)} aria-label={`Elimina ${e.title}`}>Elimina</button>
+                <button className="cbtn cbtn--sm" onClick={() => edit(e)} aria-label={`${tr('Modifica', 'Edit')} ${e.title}`}>{tr('Modifica', 'Edit')}</button>
+                <button className="cbtn cbtn--sm cbtn--danger" onClick={() => props.onDelete(e)} aria-label={`${tr('Elimina', 'Delete')} ${e.title}`}>{tr('Elimina', 'Delete')}</button>
               </li>
             ))}
           </ul>
@@ -74,30 +75,30 @@ export function EntryDialog(props: {
         {props.undo && (
           <div className="entry-undo" role="status">
             <span>{props.undo.message}</span>
-            <button type="button" className="ctoast-btn" onClick={props.undo.run}>Annulla</button>
+            <button type="button" className="ctoast-btn" onClick={props.undo.run}>{tr('Annulla', 'Undo')}</button>
           </div>
         )}
 
         <form onSubmit={submit} className="entry-form" noValidate>
-          <h3>{editing ? 'Modifica nota' : 'Nuova nota'}</h3>
-          <label><span>Titolo</span>
-            <input ref={titleRef} id="entry-title-input" autoFocus={!props.inline} value={title} maxLength={120} placeholder="es. Visita pediatra o Cena fuori" aria-invalid={!!(error || props.saveError)} aria-describedby={(error || props.saveError) ? 'entry-err' : undefined} onChange={(e) => { setTitle(e.target.value); setError(''); }} />
+          <h3>{editing ? tr('Modifica nota', 'Edit note') : tr('Nuova nota', 'New note')}</h3>
+          <label><span>{tr('Titolo', 'Title')}</span>
+            <input ref={titleRef} id="entry-title-input" autoFocus={!props.inline} value={title} maxLength={120} placeholder={tr('es. Visita pediatra o Cena fuori', 'e.g. Dentist or Dinner out')} aria-invalid={!!(error || props.saveError)} aria-describedby={(error || props.saveError) ? 'entry-err' : undefined} onChange={(e) => { setTitle(e.target.value); setError(''); }} />
           </label>
           {(error || props.saveError) && <p id="entry-err" className="field-error" role="alert">⚠ {error || props.saveError}</p>}
           <div className="row row--wrap">
-            <label className="toggle-row"><span>Tutto il giorno <small className="muted">Non vincolato a un orario preciso</small></span>
+            <label className="toggle-row"><span>{tr('Tutto il giorno', 'All day')} <small className="muted">{tr('Non vincolato a un orario preciso', 'Not tied to a specific time')}</small></span>
               <input type="checkbox" role="switch" checked={allDay} onChange={(e) => { setAllDay(e.target.checked); setError(''); }} />
             </label>
-            {!allDay && <label><span>Orario</span>
+            {!allDay && <label><span>{tr('Orario', 'Time')}</span>
               <input type="time" value={time} onChange={(e) => { setTime(e.target.value); setError(''); }} />
             </label>}
-            <label><span>Promemoria <small className="muted">(notifica sul telefono)</small></span>
+            <label><span>{tr('Promemoria', 'Reminder')} <small className="muted">{tr('(notifica sul telefono)', '(phone notification)')}</small></span>
               <select value={remindOptions(!allDay).some((o) => o.key === remind) ? remind : 'none'} onChange={(e) => setRemind(e.target.value as RemindKey)}>
                 {remindOptions(!allDay).map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
               </select>
             </label>
-            <div className="field-group" role="group" aria-label="Assegna a">
-              <span>Assegna a</span>
+            <div className="field-group" role="group" aria-label={tr('Assegna a', 'Assign to')}>
+              <span>{tr('Assegna a', 'Assign to')}</span>
               <div className="member-chips">
                 {props.calendars.map((c) => (
                   <button type="button" key={c.id} className={`member-chip${c.id === calId ? ' member-chip--on' : ''}`} aria-pressed={c.id === calId} onClick={() => setCalId(c.id)}>
@@ -107,15 +108,15 @@ export function EntryDialog(props: {
               </div>
             </div>
           </div>
-          <label><span>Note <span className="muted">(facoltative)</span></span>
+          <label><span>{tr('Note', 'Notes')} <span className="muted">{tr('(facoltative)', '(optional)')}</span></span>
             <textarea rows={4} value={notes} maxLength={4000} onChange={(e) => { setNotes(e.target.value); setError(''); }} />
           </label>
-          {editing && <p className="entry-edited">ⓘ Modificata {editing.by ? `da ${editing.by} ` : ''}il {new Date(editing.updatedAt).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
+          {editing && <p className="entry-edited">ⓘ {tr('Modificata', 'Edited')} {editing.by ? `${tr('da', 'by')} ${editing.by} ` : ''}{tr('il', 'on')} {new Date(editing.updatedAt).toLocaleString(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
           <div className="dialog-actions">
-            {editing && <button type="button" className="cbtn" onClick={reset}>Annulla modifica</button>}
-            {editing && <button type="button" className="cbtn cbtn--danger" onClick={() => { props.onDelete(editing); reset(); }}>Elimina nota</button>}
-            {!props.inline && <button type="button" className="cbtn" onClick={() => ref.current?.close()}>Chiudi</button>}
-            <button type="submit" className="cbtn cbtn--primary">{editing ? 'Salva nota' : 'Salva nota'}</button>
+            {editing && <button type="button" className="cbtn" onClick={reset}>{tr('Annulla modifica', 'Cancel editing')}</button>}
+            {editing && <button type="button" className="cbtn cbtn--danger" onClick={() => { props.onDelete(editing); reset(); }}>{tr('Elimina nota', 'Delete note')}</button>}
+            {!props.inline && <button type="button" className="cbtn" onClick={() => ref.current?.close()}>{tr('Chiudi', 'Close')}</button>}
+            <button type="submit" className="cbtn cbtn--primary">{tr('Salva nota', 'Save note')}</button>
           </div>
         </form>
       </div>

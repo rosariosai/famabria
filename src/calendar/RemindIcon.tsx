@@ -1,11 +1,12 @@
 import type { CalEvent } from '../core/events';
+import { tr } from '../core/i18n';
 
 /** Small horn-speaker icon shown on notes that have a reminder. */
 export function RemindIcon({ e }: { e: Pick<CalEvent, 'remind'> }) {
   if (!e.remind || e.remind === 'none') return null;
   return (
-    <svg className="remind-ico" viewBox="0 0 24 24" width="14" height="14" role="img" aria-label="Promemoria attivo">
-      <title>Promemoria attivo</title>
+    <svg className="remind-ico" viewBox="0 0 24 24" width="14" height="14" role="img" aria-label={tr('Promemoria attivo', 'Reminder on')}>
+      <title>{tr('Promemoria attivo', 'Reminder on')}</title>
       <rect x="1.5" y="9" width="4.5" height="6" rx="1.2" fill="currentColor" />
       <path d="M6 9 15 4.2v15.6L6 15z" fill="currentColor" />
       <rect x="15" y="3" width="3.2" height="18" rx="1.6" fill="currentColor" />

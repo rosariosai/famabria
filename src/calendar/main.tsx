@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { CalendarPage } from './CalendarPage';
 import './calendar.css';
 import './modern.css';
+import { LANG } from '../core/i18n';
+
+document.documentElement.lang = LANG; // CSS texts (today tag, week label) follow it
 
 // Web app: save the app for offline use (the extension needs no service worker).
 if (__TARGET__ === 'web' && 'serviceWorker' in navigator) {

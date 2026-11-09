@@ -192,3 +192,6 @@ footer.cal-hint { margin: 0; text-align: center; color: var(--muted); font-size:
 .entry-text .entry-meta { font-size: 12px; margin-top: 4px; }
 .cal-def { align-items: flex-end; }
 .cdialog h2#wl-title { text-transform: none; }
+
+/* English texts for the CSS-generated labels */
+html[lang='en'] .day.today .day-name::after { content: 'TODAY'; }

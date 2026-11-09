@@ -1,5 +1,6 @@
 // Reminders for notes. Pure logic: when does a note's reminder fire, which ones are coming up.
 import type { CalEvent } from './events';
+import { tr } from './i18n';
 
 export const REMIND_KEYS = ['none', 'at', '10m', '1h', '1d'] as const;
 export type RemindKey = (typeof REMIND_KEYS)[number];
@@ -8,8 +9,8 @@ export const isRemindKey = (x: unknown): x is RemindKey => typeof x === 'string'
 /** Labels for the note form. The home server checks once an hour, so "10 minutes before" is no longer offered (old notes that have it still work).  A note with no time reminds at 09:00 of its day, or at 18:00 the day before. */
 export function remindOptions(hasTime: boolean): { key: RemindKey; label: string }[] {
   return hasTime
-    ? [{ key: 'none', label: 'Nessuno' }, { key: 'at', label: "All'ora della nota" }, { key: '1h', label: '1 ora prima' }, { key: '1d', label: 'Il giorno prima alle 18:00' }]
-    : [{ key: 'none', label: 'Nessuno' }, { key: 'at', label: 'Alle 09:00 del giorno' }, { key: '1d', label: 'Il giorno prima alle 18:00' }];
+    ? [{ key: 'none', label: tr('Nessuno', 'None') }, { key: 'at', label: tr("All'ora della nota", 'At the time of the note') }, { key: '1h', label: tr('1 ora prima', '1 hour before') }, { key: '1d', label: tr('Il giorno prima alle 18:00', 'The day before at 18:00') }]
+    : [{ key: 'none', label: tr('Nessuno', 'None') }, { key: 'at', label: tr('Alle 09:00 del giorno', 'At 09:00 on the day') }, { key: '1d', label: tr('Il giorno prima alle 18:00', 'The day before at 18:00') }];
 }
 
 const at = (date: string, hh: number, mm: number, dayShift = 0) =>
@@ -30,7 +31,7 @@ export interface Upcoming { id: string; at: number; title: string; body: string 
 
 export function whenText(e: Pick<CalEvent, 'date' | 'time'>): string {
   const d = `${e.date.slice(8, 10)}/${e.date.slice(5, 7)}`;
-  return e.time ? `${d} alle ${e.time}` : `${d}, tutto il giorno`;
+  return e.time ? `${d} ${tr('alle', 'at')} ${e.time}` : `${d}, ${tr('tutto il giorno', 'all day')}`;
 }
 
 /** Reminders that fire after `from` and before `from + horizonMs`, soonest first (at most `max`). */

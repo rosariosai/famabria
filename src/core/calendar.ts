@@ -1,10 +1,15 @@
 import { saintFor } from './saints-it';
+import { isEn, tr } from './i18n';
 
 // Pure calendar logic (no DOM, no browser APIs): Italian holidays, ISO weeks, moon phases, month layout.
 
 export const MONTHS_IT = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
 export const WEEKDAYS_IT = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
 export const WEEKDAYS_IT_SHORT = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB'];
+// Names in the interface language (the *_IT constants above stay Italian for tests and data).
+export const MONTHS = isEn ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] : MONTHS_IT;
+export const WEEKDAYS = isEn ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] : WEEKDAYS_IT;
+export const WEEKDAYS_SHORT = isEn ? ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] : WEEKDAYS_IT_SHORT;
 
 /** Finger swipe on the calendar: -1 = previous month (swipe right), 1 = next month (swipe left), 0 = not a month swipe. */
 export function swipeMonthDelta(dx: number, dy: number, ms: number): -1 | 0 | 1 {
@@ -48,16 +53,16 @@ export function easter(year: number): [number, number] {
 /** Italian national public holidays for a year, keyed by YYYY-MM-DD. */
 export function italianHolidays(year: number): Record<string, string> {
   const fixed: [number, number, string][] = [
-    [0, 1, 'Capodanno'], [0, 6, 'Epifania del Signore'], [3, 25, 'Festa della Liberazione'], [4, 1, 'Festa del Lavoro'],
-    [5, 2, 'Festa della Repubblica'], [7, 15, 'Assunzione di Maria (Ferragosto)'], [10, 1, 'Ognissanti'],
-    [11, 8, 'Immacolata Concezione'], [11, 25, 'Natale'], [11, 26, 'Santo Stefano'],
+    [0, 1, tr('Capodanno', "New Year's Day")], [0, 6, tr('Epifania del Signore', 'Epiphany')], [3, 25, tr('Festa della Liberazione', 'Liberation Day')], [4, 1, tr('Festa del Lavoro', 'Labour Day')],
+    [5, 2, tr('Festa della Repubblica', 'Republic Day')], [7, 15, tr('Assunzione di Maria (Ferragosto)', 'Assumption (Ferragosto)')], [10, 1, tr('Ognissanti', "All Saints' Day")],
+    [11, 8, tr('Immacolata Concezione', 'Immaculate Conception')], [11, 25, tr('Natale', 'Christmas Day')], [11, 26, tr('Santo Stefano', "St Stephen's Day")],
   ];
   const out: Record<string, string> = {};
   for (const [m, d, name] of fixed) out[dateKey(year, m, d)] = name;
   const [em, ed] = easter(year);
-  out[dateKey(year, em, ed)] = 'Pasqua';
+  out[dateKey(year, em, ed)] = tr('Pasqua', 'Easter Sunday');
   const mon = new Date(Date.UTC(year, em, ed + 1));
-  out[dateKey(year, mon.getUTCMonth(), mon.getUTCDate())] = "Lunedì dell'Angelo";
+  out[dateKey(year, mon.getUTCMonth(), mon.getUTCDate())] = tr("Lunedì dell'Angelo", 'Easter Monday');
   return out;
 }
 
@@ -139,14 +144,14 @@ function addDays(y: number, m: number, d: number, n: number): [number, number] {
 export function movableFeasts(year: number): Record<string, string> {
   const out: Record<string, string> = {};
   const [em, ed] = easter(year);
-  const rel: [number, string][] = [[-46, 'Mercoledì delle Ceneri'], [-7, 'Domenica delle Palme'], [-3, 'Giovedì Santo'], [-2, 'Venerdì Santo'], [-1, 'Sabato Santo'],
-    [42, 'Ascensione del Signore'], [49, 'Pentecoste'], [56, 'Santissima Trinità'], [63, 'Corpus Domini']];
+  const rel: [number, string][] = [[-46, tr('Mercoledì delle Ceneri', 'Ash Wednesday')], [-7, tr('Domenica delle Palme', 'Palm Sunday')], [-3, tr('Giovedì Santo', 'Maundy Thursday')], [-2, tr('Venerdì Santo', 'Good Friday')], [-1, tr('Sabato Santo', 'Holy Saturday')],
+    [42, tr('Ascensione del Signore', 'Ascension Day')], [49, tr('Pentecoste', 'Pentecost')], [56, tr('Santissima Trinità', 'Trinity Sunday')], [63, tr('Corpus Domini', 'Corpus Christi')]];
   for (const [n, name] of rel) { const [m, d] = addDays(year, em, ed, n); out[dateKey(year, m, d)] = name; }
   // Baptism of the Lord: the Sunday after Epiphany (Italy). Holy Family: the Sunday within the Christmas octave, else 30 Dec.
   const [bm, bd] = addDays(year, 0, 6, 7 - weekdayOf(year, 0, 6));
-  out[dateKey(year, bm, bd)] = 'Battesimo di Gesù';
+  out[dateKey(year, bm, bd)] = tr('Battesimo di Gesù', 'Baptism of the Lord');
   const sunday = [26, 27, 28, 29, 30, 31].find((d) => weekdayOf(year, 11, d) === 0);
-  out[dateKey(year, 11, sunday ?? 30)] = 'Sacra Famiglia';
+  out[dateKey(year, 11, sunday ?? 30)] = tr('Sacra Famiglia', 'Holy Family');
   return out;
 }
 
@@ -192,7 +197,7 @@ export function monthCells(year: number, month: number, opts: CalendarOptions = 
   }
   const feasts = movableFeasts(year);
   const moon = moonPhases(year, month);
-  const showSaints = opts.saints !== false;
+  const showSaints = opts.saints !== false && !isEn; // the saint-of-the-day list is Italian only
   return Array.from({ length: daysInMonth(year, month) }, (_, i) => {
     const day = i + 1;
     const key = dateKey(year, month, day);
