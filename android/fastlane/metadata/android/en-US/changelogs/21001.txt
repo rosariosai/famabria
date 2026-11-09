@@ -1,0 +1,1 @@
+First Android release: the Famabria web app bundled as an Android app. English and Italian interface.

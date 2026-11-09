@@ -25,9 +25,9 @@ GitHub Actions (`.github/workflows/android.yml`) does this on every `v*` tag and
     RepoType: git
     Repo: https://github.com/rosariosai/famabria.git
     Builds:
-      - versionName: 2.10.0
-        versionCode: 21000
-        commit: v2.10.0
+      - versionName: 2.10.1
+        versionCode: 21001
+        commit: v2.10.1
         subdir: android/app
         sudo:
           - apt-get update
@@ -37,8 +37,8 @@ GitHub Actions (`.github/workflows/android.yml`) does this on every `v*` tag and
           - yes
     AutoUpdateMode: Version
     UpdateCheckMode: Tags
-    CurrentVersion: 2.10.0
-    CurrentVersionCode: 21000
+    CurrentVersion: 2.10.1
+    CurrentVersionCode: 21001
 
 Notes: the fastlane metadata (title, description, icon, phone screenshots, changelog per versionCode) is in `android/fastlane/metadata/android/en-US`. F-Droid may ask for a newer Node than the apt one: then use `sudo` to install Node 22 from nodesource.
 Anti-feature check: none expected (no tracking, no non-free network service required; the relay is optional and self-hosted).
