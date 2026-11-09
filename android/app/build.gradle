@@ -1,0 +1,31 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.famabria.app'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.famabria.app'
+        minSdk 24
+        targetSdk 34
+        versionCode 21000
+        versionName '2.10.0'
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    // F-Droid: no dependency metadata blob in the APK (it is signed with a Google-only key)
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}

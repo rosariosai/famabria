@@ -1,0 +1,14 @@
+Famabria is a family calendar for notes and reminders shared between everyone's phones and computers.
+
+<ul>
+<li>Month and week views, a colour for every family member, search across all months</li>
+<li>Works offline: notes live on your device first and sync when you are back online</li>
+<li>Optional family sync through a small relay you control (free Cloudflare account or your own server); everything is end-to-end encrypted, the relay only sees unreadable data</li>
+<li>No account, no ads, no tracking, no Google services</li>
+<li>English and Italian interface</li>
+<li>Free and open source (MIT licence)</li>
+</ul>
+
+Using it alone needs nothing else. Sharing with the family needs a relay (about 10 minutes of setup, once); family members just open the invite link.
+
+Website: https://famabria.com

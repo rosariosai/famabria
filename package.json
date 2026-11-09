@@ -23,6 +23,7 @@
     "zip": "npm run build && node scripts/zip.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "android:assets": "node scripts/android-assets.mjs",
     "build:relay": "node relay/build.mjs",
     "deploy:relay": "npm run build:web && node relay/site.mjs && npm run build:relay && npx wrangler deploy -c relay/wrangler.toml",
     "dev:relay": "npm run build:relay && npx wrangler dev -c relay/wrangler.toml",
