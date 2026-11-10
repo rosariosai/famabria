@@ -20,6 +20,7 @@ Details: [docs/SECURITY.md](docs/SECURITY.md), [docs/PRIVACY.md](docs/PRIVACY.md
 - **Chrome / Brave:** Chrome Web Store (link coming with the first release), or load `dist/chrome` as an unpacked extension.
 - **Firefox:** [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/famabria-family-calendar/), or load `dist/firefox` temporarily from `about:debugging`.
 - **Phone / tablet:** open the web app, then "Add to Home Screen".
+- **Android app (APK):** download the signed APK from the [latest release](https://github.com/rosariosai/famabria/releases/latest). To get updates automatically, install [Obtainium](https://github.com/ImranR98/Obtainium), choose "Add app" and paste `https://github.com/rosariosai/famabria`. The app is the web app bundled for offline use, plus native reminders (notifications that work with the app closed). Releases are signed with the same key every time, so updates install over the previous version. F-Droid and IzzyOnDroid listings are planned.
 
 ## Build from source
 
