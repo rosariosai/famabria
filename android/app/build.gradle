@@ -7,12 +7,26 @@ android {
         applicationId 'com.famabria.app'
         minSdk 24
         targetSdk 34
-        versionCode 21001
-        versionName '2.10.1'
+        versionCode 21100
+        versionName '2.11.0'
+    }
+    // Release signing: only when CI (or you) provides a keystore through environment variables.
+    // Without them (F-Droid builds, local builds) the release APK stays unsigned, as before.
+    def keystorePath = System.getenv('KEYSTORE_FILE')
+    signingConfigs {
+        if (keystorePath) {
+            release {
+                storeFile file(keystorePath)
+                storePassword System.getenv('KEYSTORE_PASSWORD')
+                keyAlias System.getenv('KEY_ALIAS')
+                keyPassword System.getenv('KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         release {
             minifyEnabled false
+            if (keystorePath) signingConfig signingConfigs.release
         }
     }
     compileOptions {

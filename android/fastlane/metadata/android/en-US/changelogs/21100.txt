@@ -1,0 +1,2 @@
+Reminders now fire as native Android notifications, even when the app is closed, and survive a reboot.
+Signed release APK.
