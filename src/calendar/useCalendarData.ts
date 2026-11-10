@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_CAL_SETTINGS, ensureMembers, type CalEvent, type CalSettings } from '../core/events';
+import { upcomingReminders } from '../core/reminders';
 import { getAllEvents, getCalSettings, openDb, putEvent, saveCalSettings, type Db } from '../data/db';
 
 /** Loads calendar entries + settings from IndexedDB and writes changes straight back. Reloads when the tab regains focus
@@ -44,6 +45,13 @@ export function useCalendarData() {
     const defaultCalendar = calendars.some((c) => c.id === stored.defaultCalendar) ? stored.defaultCalendar : calendars[0].id;
     return calendars === stored.calendars && defaultCalendar === stored.defaultCalendar ? stored : { ...stored, calendars, defaultCalendar };
   }, [stored, events]);
+
+  // Android app: hand the upcoming reminders to the native side (alarms + notifications that work with the app closed).
+  useEffect(() => {
+    const native = (window as unknown as { FamabriaNative?: { setReminders(json: string): void } }).FamabriaNative;
+    if (!native || state !== 'ready') return;
+    try { native.setReminders(JSON.stringify(upcomingReminders(events, Date.now(), 45 * 86_400_000, 100))); } catch { /* not running in the Android app */ }
+  }, [events, state]);
 
   const getDb = useCallback(() => db.current, []);
   return { state, events, settings, save, saveSettings, reload, getDb };

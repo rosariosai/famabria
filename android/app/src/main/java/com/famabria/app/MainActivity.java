@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
@@ -23,12 +24,14 @@ import java.io.InputStream;
  * Thin shell around the Famabria web app. The built web app (dist/web) is bundled in assets/app
  * and served from https://appassets.androidplatform.net/app/ so it behaves like the hosted PWA
  * (secure origin, IndexedDB, same absolute /app/ paths). No Google services, no analytics.
+ * Native parts: reminders as Android alarms and notifications (see NativeBridge, Reminders).
  */
 public class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
     private static final String START_URL = "https://" + HOST + "/app/app.html";
     private WebView web;
     private PermissionRequest pendingCamera;
+    private volatile boolean notifAsked;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -58,6 +61,7 @@ public class MainActivity extends Activity {
         s.setAllowContentAccess(false);
         s.setMediaPlaybackRequiresUserGesture(true);
 
+        web.addJavascriptInterface(new NativeBridge(this), "FamabriaNative");
         web.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) {
@@ -86,6 +90,20 @@ public class MainActivity extends Activity {
         });
 
         if (state != null) web.restoreState(state); else web.loadUrl(START_URL);
+    }
+
+    /** Android 13+: reminders need the notification permission. Asked once per launch, only when a reminder exists. */
+    void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT < 33 || notifAsked) return;
+        notifAsked = true;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 2);
+                }
+            }
+        });
     }
 
     private static String mimeOf(String p) {
